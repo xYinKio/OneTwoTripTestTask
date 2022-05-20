@@ -8,6 +8,8 @@ sealed class AvailableTicketsState {
 
     data class NoChosen(override val allTickets: List<AvailableTickets>) : AvailableTicketsState()
     data class Chosen(override val allTickets: List<AvailableTickets>,
-                      val tickets: AvailableTickets) : AvailableTicketsState()
+                      val tickets: AvailableTickets,
+                      val index: Int
+    ) : AvailableTicketsState()
     data class Completed(val ticket: Ticket) : AvailableTicketsState()
 }

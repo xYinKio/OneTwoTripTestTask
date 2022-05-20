@@ -19,14 +19,17 @@ import com.example.onetwotriptesttask.ui.theme.AppTheme
 fun ChoosePriceDialog(
     prices: Map<String, Int>,
     currency: String,
+    index: Int,
     onDismiss: () -> Unit,
-    onSelect: (category: String) -> Unit = {}
+    onSelect: (category: String, index: Int) -> Unit = {_,_->}
 ){
     Dialog(onDismissRequest = onDismiss) {
         ChoosePrice(
             prices = prices,
             currency = currency,
-            onSelect = onSelect)
+            onSelect = onSelect,
+            index = index
+        )
     }
 }
 
@@ -36,13 +39,14 @@ fun ChoosePrice(
     modifier: Modifier = Modifier,
     prices: Map<String, Int>,
     currency: String,
-    onSelect: (category: String) -> Unit = {}
+    index: Int = 0,
+    onSelect: (category: String, index: Int) -> Unit = {_,_->}
 ){
     val selected = remember{ mutableStateOf("business") }
 
     Card(
         modifier = modifier,
-        backgroundColor = MaterialTheme.colors.background) {
+        backgroundColor = MaterialTheme.colors.surface) {
 
         Column(
             modifier = Modifier.padding(8.dp),
@@ -61,7 +65,7 @@ fun ChoosePrice(
                 contentAlignment = Alignment.BottomEnd
             ) {
                 Button(onClick = {
-                    onSelect(selected.value)
+                    onSelect(selected.value, index)
                 },
                     colors = buttonColors(
                         backgroundColor = MaterialTheme.colors.secondary,

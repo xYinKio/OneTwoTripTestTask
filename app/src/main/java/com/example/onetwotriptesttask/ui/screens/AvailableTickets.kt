@@ -1,22 +1,18 @@
 package com.example.onetwotriptesttask.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.onetwotriptesttask.domain.AvailableTickets
-import com.example.onetwotriptesttask.domain.Ticket
 import com.example.onetwotriptesttask.domain.Trip
 import com.example.onetwotriptesttask.ui.airportByCode
 import com.example.onetwotriptesttask.ui.model.event.AvailableTicketsEvent
@@ -24,18 +20,24 @@ import com.example.onetwotriptesttask.ui.model.state.AvailableTicketsState
 import com.example.onetwotriptesttask.ui.navigation.AppActions
 import com.example.onetwotriptesttask.ui.theme.AppTheme
 import com.example.onetwotriptesttask.ui.viewModel.AvailableTicketsViewModel
+import com.example.onetwotriptesttask.ui.widgets.ArrowImage
 
 @Composable
 fun AvailableTicketsRoute(actions: AppActions){
     hiltViewModel<AvailableTicketsViewModel>().apply {
+        LaunchedEffect(Unit){
+            obtainEvent(AvailableTicketsEvent.Update)
+        }
+
         AvailableTicketsScreen(
+            modifier = Modifier.fillMaxSize(),
             state = state.collectAsState(
                 initial = AvailableTicketsState.NoChosen(listOf())
             ).value,
             onDismissDialog = { obtainEvent(AvailableTicketsEvent.DismissDialog) },
-            onClickTickets = { obtainEvent(AvailableTicketsEvent.ClickOnTickets(it))},
-            onAcceptDialog = { obtainEvent(AvailableTicketsEvent.ChooseTicket(it)) },
-            onSelectTicket = actions.goToChosenTicket
+            onClickTickets = {item, index ->
+                obtainEvent(AvailableTicketsEvent.ClickOnTickets(item, index))},
+            onAcceptDialog = actions.goToChosenTicket,
         )
     }
 
@@ -46,21 +48,18 @@ fun AvailableTicketsScreen(
     modifier: Modifier = Modifier,
     state: AvailableTicketsState = AvailableTicketsState.NoChosen(listOf()),
     onDismissDialog: () -> Unit = {},
-    onClickTickets: (AvailableTickets) -> Unit = {},
-    onSelectTicket: (Ticket) -> Unit = {},
-    onAcceptDialog: (String) -> Unit = {}
+    onClickTickets: (AvailableTickets, index: Int) -> Unit = {_,_->},
+    onAcceptDialog: (category: String, index: Int) -> Unit = {_,_->}
 ){
 
-    if (state is AvailableTicketsState.Completed){
-        onSelectTicket(state.ticket)
-    }
 
     if (state is AvailableTicketsState.Chosen){
         ChoosePriceDialog(
             prices = state.tickets.prices,
             currency = state.tickets.currency,
             onDismiss = onDismissDialog,
-            onSelect = onAcceptDialog
+            onSelect = onAcceptDialog,
+            index = state.index
         )
     }
 
@@ -70,10 +69,11 @@ fun AvailableTicketsScreen(
         contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ){
-        items(state.allTickets){
+        itemsIndexed(state.allTickets){index, item ->
             AvailableTicketsItem(
-                availableTickets = it,
-                onClick = onClickTickets
+                availableTickets = item,
+                onClick = onClickTickets,
+                index = index
             )
         }
     }
@@ -87,12 +87,13 @@ fun AvailableTicketsScreen(
 fun AvailableTicketsItem(
     modifier: Modifier = Modifier,
     availableTickets: AvailableTickets,
-    onClick: (AvailableTickets) -> Unit = {}
+    index: Int = 0,
+    onClick: (AvailableTickets, index: Int) -> Unit = {_,_->}
 ){
     Card(
         modifier = modifier.fillMaxWidth(),
         onClick = {
-            onClick(availableTickets)
+            onClick(availableTickets, index)
         }
     ) {
 
@@ -108,12 +109,7 @@ fun AvailableTicketsItem(
                         color = MaterialTheme.colors.primaryVariant
                     )
 
-                    Image(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        imageVector = Icons.Filled.ArrowForward,
-                        contentDescription = "",
-                        colorFilter = ColorFilter.tint(MaterialTheme.colors.onSurface)
-                    )
+                    ArrowImage()
 
                     Text(text = airportByCode[availableTickets.trips.last().to]!!,
                         color = MaterialTheme.colors.secondaryVariant

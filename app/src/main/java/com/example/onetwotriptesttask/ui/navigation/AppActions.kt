@@ -1,10 +1,6 @@
 package com.example.onetwotriptesttask.ui.navigation
 
-import android.os.Bundle
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.example.onetwotriptesttask.domain.AvailableTickets
-import com.example.onetwotriptesttask.domain.Ticket
 
 class AppActions(navController: NavController){
     val goBack: () -> Unit = {
@@ -13,8 +9,9 @@ class AppActions(navController: NavController){
     val goToAvailableTickets: () -> Unit = {
         navController.navigate(Destinations.AVAILABLE_TICKETS)
     }
-    val goToChosenTicket: (Ticket) -> Unit = {
-        navController.currentBackStackEntry!!.arguments!!.putSerializable("chosen_ticket", it)
-        navController.navigate(Destinations.CHOSEN_TICKET )
+    val goToChosenTicket: (flightClass: String, index: Int) -> Unit = {flightClass, index ->
+        navController.navigate(Destinations.CHOSEN_TICKET +
+            "/$flightClass/$index"
+        )
     }
 }

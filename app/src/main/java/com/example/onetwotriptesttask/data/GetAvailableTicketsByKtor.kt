@@ -11,14 +11,19 @@ import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 
 class GetAvailableTicketsByKtor @Inject constructor() : GetAvailableTickets {
 
 
-    override fun invoke() = flow {
-        val client = HttpClient(CIO){
-            install(ContentNegotiation){
+    private val tickets by lazy { runBlocking { tickets() }  }
+
+    override fun invoke() = flow { emit(tickets) }
+
+    private suspend fun tickets(): List<AvailableTickets> {
+        val client = HttpClient(CIO) {
+            install(ContentNegotiation) {
                 json()
             }
         }
@@ -32,7 +37,7 @@ class GetAvailableTicketsByKtor @Inject constructor() : GetAvailableTickets {
                 trips = it.trips.map { Trip(it.from, it.to) }
             )
         }
-        emit(res)
+        return res
     }
 
     private fun prices(it: AvailableTicketsItem): Map<String, Int> {

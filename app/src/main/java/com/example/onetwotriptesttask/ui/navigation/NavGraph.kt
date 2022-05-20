@@ -28,12 +28,13 @@ fun NavGraph(
 
         composable(Destinations.HOME){ HomeRoute(actions) }
         composable(Destinations.AVAILABLE_TICKETS){ AvailableTicketsRoute(actions) }
-        composable(Destinations.CHOSEN_TICKET+ "/{chosen_ticket}" ,
-            arguments = listOf(navArgument("chosen_ticket"){
-                type = NavType.SerializableType(Ticket::class.java)
-            })
+        composable(Destinations.CHOSEN_TICKET+ "/{flight_class}/{index}" ,
+            arguments = listOf(
+                navArgument("flight_class"){ type = NavType.StringType },
+                navArgument("index"){type = NavType.IntType}
+            )
         ){
-            ChosenTicketRoute(it.arguments!!.getSerializable("chosen_ticket") as Ticket)
+            ChosenTicketRoute()
         }
     }
 }
